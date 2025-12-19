@@ -1,52 +1,33 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import {connectDB} from './config/database.js';
+import cookieParser from "cookie-parser";
+import userRouter from"./routes/user.router.js";
+import productRouter from"./routes/product.router.js";
+import orderRouter from"./routes/order.router.js"; 
+import cartRouter from"./routes/cart.router.js";
 
-dotenv.config();
-
-const userRoutes = require('./routes/user.route');
-const productRoutes = require('./routes/product.route');
-const orderRoutes = require('./routes/order.route');
-const cartRoutes = require('./routes/cart.route');
-
+dotenv.config()
 const app = express();
 
-// middleware
-app.use(cors());
+const port = process.env.PORT || 8000;
 app.use(express.json());
+app.use(cookieParser());
 
-// db
-const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/ecommerce';
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
-  });
 
-// routes
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/cart', cartRoutes);
-
-// 404 handler
-// app.use((req, res) => {
-//   res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
-// });
-app.get('/',(req,res)=>{
-  res.send("welcome to our backend");
-})
-// error handler
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Server error' });
+app.get("/",(req,res)=>{
+    res.send("Backend is running guys!");
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+//connect to mongoDB
+connectDB();
+
+app.use("/api/users",userRouter);
+app.use("/api/products",productRouter);
+app.use("/api/orders",orderRouter);
+app.use("/api/carts",cartRouter);
+
+app.listen(port,()=>{
+    console.log(`Server is running in http://localhost:${port}`);
+});
